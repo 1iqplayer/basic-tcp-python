@@ -1,24 +1,44 @@
 import socket
 
 FIRST_MSG_SIZE = 10
+BUFFER_SIZE = 16
 
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-s.bind((socket.gethostname(), 3234))
+s.bind((socket.gethostname(), 8080))
 
-s.listen(3)
+s.listen(1)
 
-can_go = False
+can_go = False # DISCONNECT FLAG
+shut_down = False # SHUTDOWN FLAG
 while True:
+    if shut_down:
+        s.close()
+        break
+
     clientsocket, address = s.accept()
     print(f"connected with {address}")
 
-    msg = "hi my name is slim shady, im a alcoholic and i like to beat my mom"
-    msg = (f'{len(msg):<{FIRST_MSG_SIZE}}' + msg).encode("utf-8")
-    clientsocket.send(msg)
-    
-    if clientsocket.recv(2).decode("utf-8") == "OK":
-        print("Message transmitted succesfully!")
-        clientsocket.close()
-        can_go = True
-    
-    if can_go: break
+    #DATA RECEIVE LOOP
+    msg_len = 0
+    full_msg = ''
+    first_message = True
+    while True: 
+        data = clientsocket.recv(BUFFER_SIZE).decode("utf-8")
+        #RECEIVE FIRST BUFFER SIZE MESSAGE
+        if first_message:
+            first_message = False
+            msg_len = int(data[:FIRST_MSG_SIZE])
+            print(f"message size: {msg_len}")
+
+        full_msg += data
+        #IF FULL MESSAGE WAS RECEIVED
+        if len(full_msg[FIRST_MSG_SIZE:]) == msg_len:
+            print("Message received succesfully!")
+            print(f"MESSAGE: {full_msg[FIRST_MSG_SIZE:]}")
+            clientsocket.send('OK'.encode("ascii"))
+            clientsocket.close()
+            #CHECK FOR EXIT COMMAND
+            if full_msg[FIRST_MSG_SIZE:] == "SHUTDOWN": shut_down = True
+            break
+
+print("server was closed.")
