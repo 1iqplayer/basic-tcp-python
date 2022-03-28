@@ -1,10 +1,10 @@
 import socket
 
 FIRST_MSG_SIZE = 10
-END_SOCKET = 192.168.1.20
+END_SOCKET = 192.168.1.20, 8080
 
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-s.connect((socket.gethostname(), 8080))
+s.connect(END_SOCKET)
 
 msg = "SHUTDOWN"
 msg = f'{len(msg):<10}' + msg
