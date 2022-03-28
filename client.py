@@ -1,7 +1,7 @@
 import socket
 
 FIRST_MSG_SIZE = 10
-
+END_SOCKET = 192.168.1.20
 
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 s.connect((socket.gethostname(), 8080))
